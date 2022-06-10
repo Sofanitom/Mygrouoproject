@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="Main_Listener_config" doc:name="HTTP Listener config" doc:id="c1b32375-805b-40a6-a41d-ce7529e588b6" >
+		<http:listener-connection host="${secure::http.host}" port="${secure::http.port}" />
+	</http:listener-config>
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="72aa38ac-4f50-4cbd-aebe-a09888343ece" name="customer-phone-number-verfiy-api-config" api="customer-phone-number-verfiy-api.raml" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="96916e9d-e6fa-4023-9bc7-b48d6fbe54d5" file="dev-secure.yaml" key="abc12" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration doc:name="Configuration" doc:id="8e42eab4-5054-46e0-a71e-b0dcd28f8f87" defaultErrorHandler-ref="global_error_handlerError_Handler" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="1e334f27-c9e0-4e19-953e-fd11f82c628e" basePath="/number_verification" >
+		<http:request-connection host="api.apilayer.com" />
+	</http:request-config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="d1c332e8-5bfa-4b8a-b940-ae8ea0a87c44" />
+</mule>

@@ -1,0 +1,27 @@
+#%RAML 1.0
+title: customer phone number verfiy API
+
+uses:
+  myLyb: library.raml
+
+/customer:
+  securedBy:
+    - myLyb.mysec
+  get:
+    queryParameters:
+      phoneNumber:
+        type: string
+        required: false
+        minLength: 10
+        maxLength: 11
+    responses:
+      200:
+        body:
+          application/json:
+            type: myLyb.dataType
+            example: !include example.raml
+    is:
+      - myLyb.errorResp
+             
+  
+      

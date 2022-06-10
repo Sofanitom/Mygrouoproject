@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+    <flow name="customer-phone-number-verfiy-api-main">
+        <http:listener path="${secure::http.path}" config-ref="Main_Listener_config">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="customer-phone-number-verfiy-api-config"/>
+        <error-handler>
+          
+        </error-handler>
+    </flow>
+    <flow name="customer-phone-number-verfiy-api-console">
+        <http:listener path="/console/*" config-ref="Main_Listener_config">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="customer-phone-number-verfiy-api-config"/>
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\customer:customer-phone-number-verfiy-api-config">
+        <logger level="INFO" doc:name="Flow started" doc:id="4221dbbb-c0d6-4806-bdb5-26e372d5cadb" />
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  valid: true,
+  number: "14158586273",
+  local_format: "4158586273",
+  international_format: "+14158586273",
+  country_prefix: "+1",
+  country_code: "US",
+  country_name: "United States of America",
+  location: "Novato",
+  carrier: "AT&T Mobility LLC",
+  line_type: "mobile"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<validation:matches-regex doc:name="Matches regex" doc:id="be53ce36-69c8-413f-9b54-dcf2803da4ef" value='#[attributes.queryParams.phoneNumber]' regex="^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$" config-ref="Validation_Config"/>
+		<http:request method="GET" doc:name="Request" doc:id="be603182-c082-4c0d-9298-b2848e01a9ae" path="/validate" config-ref="HTTP_Request_configuration">
+			<reconnect count="3" />
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	apikey : "h8wvCXAa5rpT0yxJWQzu0cjltfzm8Dwv"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+	"number": attributes.queryParams.phoneNumber
+
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Flow Completed" doc:id="52628791-dfb5-4b93-aeeb-963106ce4d40" message="Reconnaction Stratagy start"/>
+    </flow>
+</mule>
